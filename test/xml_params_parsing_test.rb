@@ -1,3 +1,4 @@
+$:.unshift(File.dirname(__FILE__))
 require 'helper'
 
 class XmlParamsParsingTest < ActionDispatch::IntegrationTest
@@ -45,6 +46,15 @@ class XmlParamsParsingTest < ActionDispatch::IntegrationTest
     assert_parses(
       {"hash" => { "person" => ['foo']} },
       "<hash><person type=\"array\"><person>foo</person><person nil=\"true\"/></person>\n</hash>")
+  end
+
+  test "namespaces are stripped from xml" do
+    with_test_routing do
+      xml = "<ns2:person><name>David:Goliath</name></ns2:person>"
+      post "/parse", xml, default_headers
+      assert_response :ok
+      assert_equal({"person" => {"name" => "David:Goliath"}}, TestController.last_request_parameters)
+    end
   end
 
   test "parses hash params" do
