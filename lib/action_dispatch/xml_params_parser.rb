@@ -26,7 +26,10 @@ module ActionDispatch
           request.content_mime_type
 
         if mime_type == Mime::XML
-          data = request.deep_munge(Hash.from_xml(request.body.read) || {})
+
+          r = Regexp.new('(?<=<)/?\w*:') # matches xml namespace prefixes ie the ns2 parts of <ns2:foo>bar</ns2:foo>
+
+          data = request.deep_munge(Hash.from_xml(request.body.read.to_s.gsub(r,'')) || {})
           data.with_indifferent_access
         else
           false
